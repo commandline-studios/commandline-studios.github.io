@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>commandline studios</title>
 
-    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
@@ -33,13 +31,12 @@
             backdrop-filter: blur(0px);
         }
 
-        /* Typing animation for hero text */
         .typing {
             border-right: 2px solid rgba(255,255,255,0.6);
             white-space: nowrap;
             overflow: hidden;
             display: inline-block;
-            line-height: 1.2; /* prevents clipping */
+            line-height: 1.2;
             animation: typing 3s steps(25) 1 forwards, blink 0.75s step-end infinite;
         }
 
@@ -56,7 +53,6 @@
 
 <body class="text-slate-300 antialiased">
 
-    <!-- NAV -->
     <nav class="sticky top-0 z-50 nav-blur border-b border-white/5">
         <div class="flex justify-between items-center px-6 py-0.5 max-w-full">
             <img src="assets/commandlinestudios-trans.png"
@@ -70,7 +66,6 @@
         </div>
     </nav>
 
-    <!-- HERO -->
     <header class="container mx-auto py-32 px-6 text-center pb-36 md:pb-40">
         <h1 class="text-5xl md:text-7xl font-light text-white mb-12 md:mb-16 tracking-tight">
             <span class="typing">Design. Code. <span class="text-white/50 italic">Launch.</span></span>
@@ -80,7 +75,6 @@
         </p>
     </header>
 
-    <!-- PROJECTS -->
     <section id="projects" class="container mx-auto py-24 px-6">
         <div class="flex items-center space-x-4 mb-12">
             <div class="h-px w-12 bg-white/20"></div>
@@ -120,7 +114,6 @@
         </div>
     </section>
 
-    <!-- IN DEVELOPMENT -->
     <section id="development" class="py-24 px-6">
         <div class="container mx-auto">
             <div class="flex items-center space-x-4 mb-12">
@@ -130,10 +123,10 @@
                 </h2>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div class="panel flex items-center space-x-6 p-8 rounded-2xl">
                     <img src="assets/oxide.png"
-                         class="w-16 h-16 opacity-40 grayscale"
+                         class="w-16 h-16 opacity-40 grayscale rounded-xl"
                          alt="Oxide Browser">
                     <div>
                         <h4 class="text-white font-medium text-lg">Oxide Browser</h4>
@@ -145,7 +138,7 @@
 
                 <div class="panel flex items-center space-x-6 p-8 rounded-2xl">
                     <img src="assets/app-icon.png"
-                         class="w-16 h-16 opacity-40 grayscale"
+                         class="w-16 h-16 opacity-40 grayscale rounded-xl"
                          alt="CyberAware SA">
                     <div>
                         <h4 class="text-white font-medium text-lg">CyberAware SA</h4>
@@ -154,11 +147,22 @@
                         </p>
                     </div>
                 </div>
+
+                <div class="panel flex items-center space-x-6 p-8 rounded-2xl">
+                    <img src="assets/ollama-icon.png"
+                         class="w-16 h-16 opacity-40 grayscale rounded-xl"
+                         alt="Ollama Android">
+                    <div>
+                        <h4 class="text-white font-medium text-lg">Ollama</h4>
+                        <p class="text-sm text-slate-500">
+                            A native Android port for Ollama.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- ABOUT -->
     <section id="about" class="container mx-auto py-32 px-6">
         <div class="max-w-3xl">
             <h2 class="text-xs uppercase tracking-[0.25em] text-white/30 font-semibold mb-8">
@@ -171,7 +175,6 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="p-16 text-center border-t border-white/5">
         <p class="text-[10px] text-white/20 uppercase tracking-[0.4em] font-semibold">
             © 2026 commandline studios
@@ -180,4 +183,3 @@
 
 </body>
 </html>
-
