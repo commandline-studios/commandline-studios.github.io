@@ -8,106 +8,116 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap');
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #0b0e14;
+            background: #000000;
         }
 
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Panels (cards) */
         .panel {
-            background: rgba(23, 27, 37, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            transition: border-color 0.2s ease, transform 0.2s ease;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 1); /* full white */
+            transition: all 0.2s ease-in-out;
         }
 
         .panel:hover {
-            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); /* stronger hover glow */
             transform: translateY(-2px);
         }
 
-        .nav-blur {
-            background: rgba(11, 14, 20, 0.00);
-            backdrop-filter: blur(0px);
+        .panel-dev {
+            border: 1px solid rgba(255, 255, 255, 1); /* full white */
         }
 
-        .typing {
-            border-right: 2px solid rgba(255,255,255,0.6);
-            white-space: nowrap;
-            overflow: hidden;
+        /* Buttons / links */
+        .btn-link {
             display: inline-block;
-            line-height: 1.2;
-            animation: typing 3s steps(25) 1 forwards, blink 0.75s step-end infinite;
+            border-bottom: 1px solid rgba(255, 255, 255, 1); /* full white underline */
+            padding-bottom: 2px;
+            transition: all 0.2s;
         }
 
-        @keyframes typing {
-            from { width: 0 }
-            to { width: 100% }
+        .btn-link:hover {
+            color: white;
         }
 
-        @keyframes blink {
-            50% { border-color: transparent }
+        /* Adjusting the logo container to allow absolute edge alignment */
+        .logo-container {
+            margin-left: -1rem; 
+        }
+
+        /* Studio Green */
+        .text-studio-green {
+            color: #1abc9c; /* darker, richer green */
         }
     </style>
 </head>
 
 <body class="text-slate-300 antialiased">
 
-    <nav class="sticky top-0 z-50 nav-blur border-b border-white/5">
-        <div class="flex justify-between items-center px-6 py-0.5 max-w-full">
-            <img src="assets/commandlinestudios-trans.png"
-                 alt="commandline studios"
-                 class="h-24 md:h-32 scale-110 md:scale-125 origin-left">
+    <nav class="sticky top-0 z-50 bg-transparent">
+        <div class="flex justify-between items-center px-4 py-4 w-full mx-auto">
+            <div class="logo-container">
+                <img src="assets/commandlinestudios-trans.png"
+                     alt="commandline studios"
+                     class="h-20 md:h-28 scale-125 md:scale-150 origin-left">
+            </div>
 
-            <div class="hidden md:flex space-x-8 text-xs uppercase tracking-[0.25em] font-medium">
-                <a href="#projects" class="text-white/60 hover:text-white transition">Portfolio</a>
-                <a href="#about" class="text-white/60 hover:text-white transition">About</a>
+            <div class="flex space-x-8 text-[10px] uppercase tracking-[0.3em] font-semibold pr-4">
+                <a href="#projects" class="text-white/50 hover:text-white transition">Portfolio</a>
+                <a href="#about" class="text-white/50 hover:text-white transition">About</a>
             </div>
         </div>
     </nav>
 
-    <header class="container mx-auto py-32 px-6 text-center pb-36 md:pb-40">
-        <h1 class="text-5xl md:text-7xl font-light text-white mb-12 md:mb-16 tracking-tight">
-            <span class="typing">Design. Code. <span class="text-white/50 italic">Launch.</span></span>
-        </h1>
-        <p class="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
-            commandline studios is a small independent software studio making apps.
-        </p>
+    <header class="container mx-auto py-48 px-6">
+        <div class="max-w-4xl">
+            <h1 class="text-6xl md:text-8xl font-bold text-white mb-8 tracking-tighter leading-[0.95]">
+                We <span class="text-studio-green font-bold">make</span><br>
+                it <span class="text-white/20 italic">work.</span>
+            </h1>
+            <p class="mono text-sm text-white/40 max-w-xl leading-relaxed">
+                > independent software studio / build 2026.02.25 <br>
+                > building apps, protocols, and games that don't suck.
+            </p>
+        </div>
     </header>
 
     <section id="projects" class="container mx-auto py-24 px-6">
-        <div class="flex items-center space-x-4 mb-12">
-            <div class="h-px w-12 bg-white/20"></div>
-            <h2 class="text-xs uppercase tracking-[0.25em] text-white/40 font-semibold">
+        <div class="flex items-center space-x-4 mb-16">
+            <h2 class="mono text-xs uppercase tracking-widest text-white font-bold">
                 Released Projects
             </h2>
+            <div class="h-px flex-grow bg-white/20"></div>
         </div>
 
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="panel p-10 rounded-2xl">
-                <img src="assets/podcasts_icon.png"
-                     class="w-14 h-14 mb-8 rounded-xl"
-                     alt="Podcasts.">
-                <h3 class="text-2xl font-semibold text-white mb-3">Podcasts.</h3>
-                <p class="text-slate-400 mb-6 leading-relaxed">
-                    A podcast app built with Flutter.
+        <div class="grid md:grid-cols-2 gap-10">
+            <div class="panel p-10">
+                <img src="assets/podcasts_icon.png" class="w-14 h-14 mb-8 rounded-lg" alt="Podcasts.">
+                <h3 class="text-2xl font-bold text-white mb-3 tracking-tight">Podcasts.</h3>
+                <p class="text-slate-400 mb-10 leading-relaxed">
+                    A podcast app built with Flutter. 
                 </p>
                 <a href="https://play.google.com/store/apps/details?id=com.podcasts.app"
-                   class="inline-block py-2 px-6 rounded-full border border-white/10 hover:bg-white hover:text-black transition text-sm font-medium">
-                    Play Store
+                   class="btn-link mono text-xs uppercase tracking-widest font-bold">
+                    View on Play Store
                 </a>
             </div>
 
-            <div class="panel p-10 rounded-2xl">
-                <img src="assets/oasp.png"
-                     class="w-14 h-14 mb-8 rounded-xl opacity-90"
-                     alt="OASP Protocol">
-                <h3 class="text-2xl font-semibold text-white mb-3">OASP</h3>
-                <p class="text-slate-400 mb-6 leading-relaxed">
+            <div class="panel p-10">
+                <img src="assets/oasp.png" class="w-14 h-14 mb-8 rounded-lg" alt="OASP Protocol">
+                <h3 class="text-2xl font-bold text-white mb-3 tracking-tight">OASP</h3>
+                <p class="text-slate-400 mb-10 leading-relaxed">
                     Open Audio Streaming Protocol — an experimental Bluetooth audio protocol.
                 </p>
                 <a href="https://github.com/commandline-studios/OASP"
-                   class="inline-block py-2 px-6 rounded-full border border-white/10 hover:bg-white hover:text-black transition text-sm font-medium">
+                   class="btn-link mono text-xs uppercase tracking-widest font-bold">
                     Source Code
                 </a>
             </div>
@@ -117,46 +127,15 @@
     <section id="development" class="py-24 px-6">
         <div class="container mx-auto">
             <div class="flex items-center space-x-4 mb-12">
-                <div class="h-px w-12 bg-white/20"></div>
-                <h2 class="text-xs uppercase tracking-[0.25em] text-white/40 font-semibold">
-                    In Development
-                </h2>
+                <h2 class="mono text-xs uppercase tracking-widest text-white/40 font-bold">In Development</h2>
+                <div class="h-px flex-grow bg-white/5"></div>
             </div>
-
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="panel flex items-center space-x-6 p-8 rounded-2xl">
-                    <img src="assets/oxide.png"
-                         class="w-16 h-16 opacity-40 grayscale rounded-xl"
-                         alt="Oxide Browser">
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="panel panel-dev flex items-center space-x-6 p-8">
+                    <img src="assets/oxide.png" class="w-12 h-12 rounded-lg" alt="Oxide">
                     <div>
-                        <h4 class="text-white font-medium text-lg">Oxide Browser</h4>
-                        <p class="text-sm text-slate-500">
-                            A Rust-based browser engine built without Chromium.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="panel flex items-center space-x-6 p-8 rounded-2xl">
-                    <img src="assets/app-icon.png"
-                         class="w-16 h-16 opacity-40 grayscale rounded-xl"
-                         alt="CyberAware SA">
-                    <div>
-                        <h4 class="text-white font-medium text-lg">CyberAware SA</h4>
-                        <p class="text-sm text-slate-500">
-                            Community-driven scam reporting app.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="panel flex items-center space-x-6 p-8 rounded-2xl">
-                    <img src="assets/ollama-icon.png"
-                         class="w-16 h-16 opacity-40 grayscale rounded-xl"
-                         alt="Ollama Android">
-                    <div>
-                        <h4 class="text-white font-medium text-lg">Ollama</h4>
-                        <p class="text-sm text-slate-500">
-                            A native Android port for Ollama.
-                        </p>
+                        <h4 class="text-white font-bold tracking-tight">Oxide Browser</h4>
+                        <p class="text-xs text-slate-500">Rust-based browser built without Chromium.</p>
                     </div>
                 </div>
             </div>
@@ -165,18 +144,18 @@
 
     <section id="about" class="container mx-auto py-32 px-6">
         <div class="max-w-3xl">
-            <h2 class="text-xs uppercase tracking-[0.25em] text-white/30 font-semibold mb-8">
+            <h2 class="mono text-xs uppercase tracking-widest text-white/30 font-bold mb-8">
                 The Studio
             </h2>
-            <p class="text-2xl md:text-3xl text-white leading-relaxed font-light">
+            <p class="text-2xl md:text-4xl text-white leading-tight font-light tracking-tight">
                 commandline studios is a small, independent team.
-                This space exists to showcase our work, projects, and experimental software.
+                This space exists to showcase our work and projects.
             </p>
         </div>
     </section>
 
-    <footer class="p-16 text-center border-t border-white/5">
-        <p class="text-[10px] text-white/20 uppercase tracking-[0.4em] font-semibold">
+    <footer class="p-20 text-center border-t border-white/10">
+        <p class="mono text-[10px] text-white/20 uppercase tracking-[0.5em] font-bold">
             © 2026 commandline studios
         </p>
     </footer>
