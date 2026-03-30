@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>commandline studios</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Panels (cards) */
+        .panel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 1);
+            transition: all 0.2s ease-in-out;
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+
+        .panel:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .panel-dev {
+            border: 1px solid rgba(255, 255, 255, 1);
+            border-radius: 1rem;
+        }
+
+        /* Game Container Styles */
+        .game-container {
+            border: 1px solid #1abc9c;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            background: #050505;
+            position: relative;
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        /* Buttons / links */
+        .btn-link {
+            display: inline-block;
+            border-bottom: 1px solid rgba(255, 255, 255, 1);
+            padding-bottom: 2px;
+            transition: all 0.2s;
+        }
+
+        .btn-link:hover {
+            color: white;
+        }
+
+        .logo-container {
+            margin-left: -1rem; 
+        }
+
+        .text-studio-green {
+            color: #1abc9c;
+        }
+        
+        .border-studio-green {
+            border-color: #1abc9c;
+        }
+    </style>
+</head>
+
+<body class="text-slate-300 antialiased">
+
+    <nav class="sticky top-0 z-50 bg-transparent">
+        <div class="flex justify-between items-center px-4 py-4 w-full mx-auto">
+            <div class="logo-container">
+                <img src="assets/commandlinestudios-trans.png" alt="commandline studios" class="h-20 md:h-28 scale-125 md:scale-150 origin-left">
+            </div>
+
+            <div class="flex space-x-8 text-[10px] uppercase tracking-[0.3em] font-semibold pr-4">
+                <a href="#projects" class="text-white/50 hover:text-white transition">Portfolio</a>
+                <a href="#about" class="text-white/50 hover:text-white transition">About</a>
+                <a href="https://discord.gg/5NDrUSP3jb" target="_blank" class="text-studio-green hover:text-white transition">Join Us</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="container mx-auto py-48 px-6">
+        <div class="max-w-4xl">
+            <h1 class="text-6xl md:text-8xl font-bold text-white mb-8 tracking-tighter leading-[0.95]">
+                We <span class="text-studio-green font-bold">make</span><br>
+                it <span class="text-white/20 italic">work.</span>
+            </h1>
+            <p class="mono text-sm text-white/40 max-w-xl leading-relaxed">
+                > independent software studio / build 2026.03.30 <br>
+                > building apps, protocols, and games that don't suck.
+            </p>
+        </div>
+    </header>
+
+    <section id="play" class="container mx-auto py-12 px-6">
+        <div class="flex items-center space-x-4 mb-8">
+            <h2 class="mono text-xs uppercase tracking-widest text-studio-green font-bold">
+                Active Terminal: Space-Balls
+            </h2>
+            <div class="h-px flex-grow bg-studio-green/20"></div>
+        </div>
+        
+        <div id="game-launch-pad" class="game-container shadow-2xl shadow-studio-green/10 group relative">
+            <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 group-hover:bg-black/40 transition-all duration-500">
+                <div class="p-6 border-2 border-studio-green rounded-full mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-studio-green fill-current" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </div>
+                <span class="mono text-studio-green text-sm tracking-[0.4em] font-bold uppercase animate-pulse">Initialize Session</span>
+            </div>
+            <iframe src="space-balls/index.html" title="Space-Balls Game Preview"></iframe>
+        </div>
+        
+        <div class="mt-6 text-center">
+            <p class="mono text-[10px] text-white/30 uppercase tracking-widest">
+                [ Click anywhere on the terminal to enter full screen mode ]
+            </p>
+        </div>
+    </section>
+
+    <section id="projects" class="container mx-auto py-24 px-6">
+        <div class="flex items-center space-x-4 mb-16">
+            <h2 class="mono text-xs uppercase tracking-widest text-white font-bold">
+                Released Projects
+            </h2>
+            <div class="h-px flex-grow bg-white/20"></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-10">
+            <div class="panel p-10">
+                <img src="assets/podcasts_icon.png" class="w-14 h-14 mb-8 rounded-lg" alt="Podcasts.">
+                <h3 class="text-2xl font-bold text-white mb-3 tracking-tight">Podcasts.</h3>
+                <p class="text-slate-400 mb-10 leading-relaxed">
+                    A podcast app built with Flutter. 
+                </p>
+                <a href="https://play.google.com/store/apps/details?id=com.podcasts.app"
+                    class="btn-link mono text-xs uppercase tracking-widest font-bold">
+                    View on Play Store
+                </a>
+            </div>
+
+            <div class="panel p-10">
+                <img src="assets/oasp.png" class="w-14 h-14 mb-8 rounded-lg" alt="OASP Protocol">
+                <h3 class="text-2xl font-bold text-white mb-3 tracking-tight">OASP</h3>
+                <p class="text-slate-400 mb-10 leading-relaxed">
+                    Open Audio Streaming Protocol — an experimental Bluetooth audio protocol.
+                </p>
+                <a href="https://github.com/commandline-studios/OASP"
+                    class="btn-link mono text-xs uppercase tracking-widest font-bold">
+                    Source Code
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="development" class="py-24 px-6">
+        <div class="container mx-auto">
+            <div class="flex items-center space-x-4 mb-12">
+                <h2 class="mono text-xs uppercase tracking-widest text-white/40 font-bold">In Development</h2>
+                <div class="h-px flex-grow bg-white/5"></div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="panel panel-dev flex items-center space-x-6 p-8">
+                    <img src="assets/oxide.png" class="w-12 h-12 rounded-lg" alt="Oxide">
+                    <div>
+                        <h4 class="text-white font-bold tracking-tight">Oxide Browser</h4>
+                        <p class="text-xs text-slate-500">Rust-based browser built without Chromium.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="container mx-auto py-32 px-6">
+        <div class="max-w-3xl">
+            <h2 class="mono text-xs uppercase tracking-widest text-white/30 font-bold mb-8">
+                The Studio
+            </h2>
+            <p class="text-2xl md:text-4xl text-white leading-tight font-light tracking-tight">
+                commandline studios is a small, independent team.
+                This space exists to showcase our work and projects.
+            </p>
+        </div>
+    </section>
+
+    <footer class="p-20 text-center border-t border-white/10">
+        <p class="mono text-[10px] text-white/20 uppercase tracking-[0.5em] font-bold">
+            © 2026 commandline studios
+        </p>
+    </footer>
+
+    <script>
+        const launchPad = document.getElementById('game-launch-pad');
+        launchPad.addEventListener('click', () => {
+            window.location.href = "space-balls/";
+        });
+    </script>
+
+</body>
+</html>
