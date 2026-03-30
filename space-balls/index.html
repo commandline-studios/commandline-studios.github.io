@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space-Balls</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="damageOverlay"></div>
+    <div id="invincibleOverlay"></div>
+    <div id="waveAnnounce">WAVE 1</div>
+    <div id="bossWarning" class="hidden">BOSS INCOMING!</div>
+    
+    <div id="crosshair" class="crosshair hidden">
+        <div class="crosshair-dot"></div>
+    </div>
+    
+    <div id="hud">
+        <div id="scoreContainer">
+            <div id="score">SCORE: 0</div>
+            <div id="combo">x1 COMBO</div>
+        </div>
+        
+        <div id="waveInfo">
+            <div id="wave">WAVE 1</div>
+            <div id="kills">KILLS: 0</div>
+        </div>
+        
+        <div id="timer">00:00</div>
+        
+        <div id="health">
+            <div class="heart"></div>
+            <div class="heart"></div>
+            <div class="heart"></div>
+        </div>
+        
+        <div id="powerupIndicator">SPEED BOOST!</div>
+        
+        <div id="energyContainer">
+            <div id="energyLabel">ENERGY</div>
+            <div id="energyBar">
+                <div id="energyFill"></div>
+            </div>
+        </div>
+        
+        <div id="dashIndicator">
+            <div id="dashText">DASH [SPACE]</div>
+            <div id="dashReady"></div>
+        </div>
+    </div>
+
+    <div id="startScreen" class="overlay">
+        <h1>SPACE-BALLS</h1>
+        <p>Collect orbs. Shoot drones. Survive the waves.</p>
+        <button class="btn" id="startBtn">START GAME</button>
+        <div class="controls">
+            <span>WASD</span> - Move | <span>MOUSE</span> - Look | <span>CLICK</span> - Shoot<br>
+            <span>SPACE</span> - Dash | <span>ESC</span> - Pause
+        </div>
+    </div>
+
+    <div id="gameOverScreen" class="overlay hidden">
+        <h2>GAME OVER</h2>
+        <div id="finalScore">SCORE: 0</div>
+        <div id="highScore">HIGH SCORE: 0</div>
+        <div id="waveReached">WAVE REACHED: 1</div>
+        <button class="btn" id="restartBtn">PLAY AGAIN</button>
+    </div>
+
+    <div id="pauseScreen" class="overlay hidden">
+        <h2>PAUSED</h2>
+        <p>Press ESC to continue</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
