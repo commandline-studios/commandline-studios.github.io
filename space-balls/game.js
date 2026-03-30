@@ -184,6 +184,14 @@ function initSounds() {
 
 initSounds();
 
+function detectTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
+}
+
+if (detectTouchDevice()) {
+    document.body.classList.add('touch-enabled');
+}
+
 function createOrb() {
     const geometry = new THREE.SphereGeometry(0.5, 32, 32);
     const material = new THREE.MeshStandardMaterial({
