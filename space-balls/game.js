@@ -73,6 +73,12 @@ let pitch = 0;
 let yaw = 0;
 const mouseSensitivity = 0.002;
 
+const touchInput = { x: 0, y: 0 };
+let touchLookId = null;
+let lastTouchX = 0, lastTouchY = 0;
+let joystickTouchId = null;
+let joystickStartX = 0, joystickStartY = 0;
+
 const orbs = [];
 const drones = [];
 const projectiles = [];
@@ -555,11 +561,126 @@ document.addEventListener('mousemove', (e) => {
 });
 
 canvas.addEventListener('mousedown', (e) => {
+    if (gameState !== GameState.PLAYING) return;
+    if (e.target !== canvas) return;
+    
+    if (document.pointerLockElement !== canvas) {
+        canvas.requestPointerLock();
+    } else if (e.button === 0) {
+        createProjectile();
+    }
+});
+
+
+
+const joystickArea = document.getElementById('joystickArea');
+const joystickKnob = document.getElementById('joystickKnob');
+const shootArea = document.getElementById('shootArea');
+const dashBtn = document.getElementById('dashBtn');
+
+joystickArea.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    joystickTouchId = touch.identifier;
+    const rect = joystickArea.getBoundingClientRect();
+    joystickStartX = rect.left + rect.width / 2;
+    joystickStartY = rect.top + rect.height / 2;
+});
+
+joystickArea.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    for (let touch of e.changedTouches) {
+        if (touch.identifier === joystickTouchId) {
+            let dx = touch.clientX - joystickStartX;
+            let dy = touch.clientY - joystickStartY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const maxDist = 35;
+            if (dist > maxDist) {
+                dx = (dx / dist) * maxDist;
+                dy = (dy / dist) * maxDist;
+            }
+            joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            touchInput.x = dx / maxDist;
+            touchInput.y = dy / maxDist;
+        }
+    }
+});
+
+joystickArea.addEventListener('touchend', (e) => {
+    for (let touch of e.changedTouches) {
+        if (touch.identifier === joystickTouchId) {
+            joystickTouchId = null;
+            joystickKnob.style.transform = 'translate(-50%, -50%)';
+            touchInput.x = 0;
+            touchInput.y = 0;
+        }
+    }
+});
+
+shootArea.addEventListener('touchstart', (e) => {
+    e.preventDefault();
     if (gameState === GameState.PLAYING) {
-        if (document.pointerLockElement !== canvas) {
-            canvas.requestPointerLock();
-        } else if (e.button === 0) {
-            createProjectile();
+        createProjectile();
+    }
+});
+
+dashBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (gameState === GameState.PLAYING && dashCooldown <= 0) {
+        isDashing = true;
+        dashCooldown = 2;
+        
+        const moveDir = new THREE.Vector3(touchInput.x, 0, touchInput.y);
+        const forward = new THREE.Vector3(0, 0, -1);
+        forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+        const right = new THREE.Vector3(1, 0, 0);
+        right.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+        
+        const dashDir = new THREE.Vector3();
+        dashDir.addScaledVector(forward, -touchInput.y);
+        dashDir.addScaledVector(right, touchInput.x);
+        
+        if (dashDir.length() < 0.1) dashDir.copy(forward);
+        
+        playerVelocity.copy(dashDir.normalize().multiplyScalar(dashSpeed));
+        spawnParticles(camera.position.clone(), 0x00ffff, 15);
+        triggerScreenShake(0.3, 0.15);
+        
+        setTimeout(() => isDashing = false, 150);
+    }
+});
+
+canvas.addEventListener('touchstart', (e) => {
+    if (gameState === GameState.PLAYING && e.touches.length === 1) {
+        const touch = e.touches[0];
+        if (touch.clientX > window.innerWidth * 0.3) {
+            touchLookId = touch.identifier;
+            lastTouchX = touch.clientX;
+            lastTouchY = touch.clientY;
+        }
+    }
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    if (gameState === GameState.PLAYING) {
+        for (let touch of e.changedTouches) {
+            if (touch.identifier === touchLookId) {
+                const dx = touch.clientX - lastTouchX;
+                const dy = touch.clientY - lastTouchY;
+                yaw -= dx * 0.005;
+                pitch -= dy * 0.005;
+                pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch));
+                lastTouchX = touch.clientX;
+                lastTouchY = touch.clientY;
+            }
+        }
+    }
+});
+
+canvas.addEventListener('touchend', (e) => {
+    for (let touch of e.changedTouches) {
+        if (touch.identifier === touchLookId) {
+            touchLookId = null;
         }
     }
 });
@@ -608,10 +729,14 @@ function startGame() {
     document.getElementById('startScreen').classList.add('hidden');
     document.getElementById('gameOverScreen').classList.add('hidden');
     document.getElementById('pauseScreen').classList.add('hidden');
-    document.getElementById('crosshair').classList.remove('hidden');
+    
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+    if (!isTouchDevice) {
+        document.getElementById('crosshair').classList.remove('hidden');
+        canvas.requestPointerLock();
+    }
     
     gameState = GameState.PLAYING;
-    canvas.requestPointerLock();
     
     setTimeout(spawnWave, 1000);
 }
@@ -687,6 +812,8 @@ function updateEnergyDisplay() {
 function updateDashDisplay() {
     const dashReady = document.getElementById('dashReady');
     dashReady.classList.toggle('cooldown', dashCooldown > 0);
+    const touchDashBtn = document.getElementById('dashBtn');
+    touchDashBtn.classList.toggle('cooldown', dashCooldown > 0);
 }
 
 let lastTime = performance.now();
@@ -765,6 +892,11 @@ function update() {
     if (keys.s) direction.z += 1;
     if (keys.a) direction.x -= 1;
     if (keys.d) direction.x += 1;
+    
+    if (direction.length() === 0 && (touchInput.x !== 0 || touchInput.y !== 0)) {
+        direction.x = touchInput.x;
+        direction.z = touchInput.y;
+    }
     
     direction.normalize();
     
