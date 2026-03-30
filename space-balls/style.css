@@ -57,6 +57,7 @@ body {
     width: 120px;
     height: 120px;
     touch-action: none;
+    pointer-events: auto;
 }
 
 #joystickBase {
@@ -96,6 +97,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: auto;
 }
 
 #shootArea::after {
@@ -123,6 +125,7 @@ body {
     align-items: center;
     justify-content: center;
     touch-action: none;
+    pointer-events: auto;
     letter-spacing: 1px;
 }
 
