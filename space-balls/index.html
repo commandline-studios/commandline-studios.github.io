@@ -12,6 +12,7 @@
     
     <div id="damageOverlay"></div>
     <div id="invincibleOverlay"></div>
+    <div id="shieldOverlay"></div>
     <div id="waveAnnounce">WAVE 1</div>
     <div id="bossWarning" class="hidden">BOSS INCOMING!</div>
     
@@ -25,7 +26,7 @@
             <div id="combo">x1 COMBO</div>
         </div>
         
-        <div id="credits">v1.1.0 | commandline studios</div>
+        <div id="credits">v1.2.0 | commandline studios</div>
         
         <div id="touchControls">
             <div id="joystickArea">
@@ -80,7 +81,17 @@
         <div id="finalScore">SCORE: 0</div>
         <div id="highScore">HIGH SCORE: 0</div>
         <div id="waveReached">WAVE REACHED: 1</div>
+        <div id="gameStats"></div>
+        <div id="achievementSummary"></div>
         <button class="btn" id="restartBtn">PLAY AGAIN</button>
+    </div>
+    
+    <div id="achievementNotification">
+        <div class="ach-icon"></div>
+        <div class="ach-text">
+            <div class="ach-name"></div>
+            <div class="ach-desc"></div>
+        </div>
     </div>
 
     <div id="pauseScreen" class="overlay hidden">

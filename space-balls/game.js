@@ -92,6 +92,125 @@ let freezeDronesTimer = 0;
 let invincibleTimer = 0;
 let lastSurvivalBonus = 0;
 
+let shieldActive = false;
+let shieldTimer = 0;
+let magnetActive = false;
+let magnetTimer = 0;
+let currentWeapon = 'normal';
+let weaponTimer = 0;
+
+let totalShots = 0;
+let totalHits = 0;
+let highestCombo = 1;
+let highestWave = 1;
+let totalKills = 0;
+let gamesPlayed = 0;
+
+const achievements = {
+    firstBlood: { name: 'First Blood', desc: 'Get your first kill', unlocked: false, icon: '!' },
+    comboMaster: { name: 'Combo Master', desc: 'Reach x5 combo', unlocked: false, icon: 'x' },
+    waveSurvivor5: { name: 'Survivor', desc: 'Reach wave 5', unlocked: false, icon: 'W' },
+    waveSurvivor10: { name: 'Veteran', desc: 'Reach wave 10', unlocked: false, icon: 'V' },
+    sharpshooter: { name: 'Sharpshooter', desc: 'Achieve 80% accuracy', unlocked: false, icon: 'S' },
+    bossKiller: { name: 'Boss Killer', desc: 'Defeat a boss', unlocked: false, icon: 'B' },
+    hundredKills: { name: 'Century', desc: 'Get 100 kills', unlocked: false, icon: 'C' },
+    scoreChaser: { name: 'Score Chaser', desc: 'Reach 10,000 points', unlocked: false, icon: '$' }
+};
+
+function loadStats() {
+    const saved = localStorage.getItem('spaceBallsStats');
+    if (saved) {
+        const data = JSON.parse(saved);
+        totalKills = data.totalKills || 0;
+        gamesPlayed = data.gamesPlayed || 0;
+        highestWave = data.highestWave || 1;
+        highestCombo = data.highestCombo || 1;
+        const savedAchievements = data.achievements || {};
+        for (let key in savedAchievements) {
+            if (achievements[key]) achievements[key].unlocked = savedAchievements[key];
+        }
+    }
+}
+
+function saveStats() {
+    const savedAchievements = {};
+    for (let key in achievements) {
+        savedAchievements[key] = achievements[key].unlocked;
+    }
+    localStorage.setItem('spaceBallsStats', JSON.stringify({
+        totalKills,
+        gamesPlayed,
+        highestWave,
+        highestCombo,
+        achievements: savedAchievements
+    }));
+}
+
+function checkAchievements() {
+    if (kills >= 1 && !achievements.firstBlood.unlocked) {
+        achievements.firstBlood.unlocked = true;
+        showAchievement('firstBlood');
+    }
+    if (combo >= 5 && !achievements.comboMaster.unlocked) {
+        achievements.comboMaster.unlocked = true;
+        showAchievement('comboMaster');
+    }
+    if (wave >= 5 && !achievements.waveSurvivor5.unlocked) {
+        achievements.waveSurvivor5.unlocked = true;
+        showAchievement('waveSurvivor5');
+    }
+    if (wave >= 10 && !achievements.waveSurvivor10.unlocked) {
+        achievements.waveSurvivor10.unlocked = true;
+        showAchievement('waveSurvivor10');
+    }
+    if (totalShots > 0 && totalHits / totalShots >= 0.8 && !achievements.sharpshooter.unlocked) {
+        achievements.sharpshooter.unlocked = true;
+        showAchievement('sharpshooter');
+    }
+    if (totalKills >= 100 && !achievements.hundredKills.unlocked) {
+        achievements.hundredKills.unlocked = true;
+        showAchievement('hundredKills');
+    }
+    if (score >= 10000 && !achievements.scoreChaser.unlocked) {
+        achievements.scoreChaser.unlocked = true;
+        showAchievement('scoreChaser');
+    }
+    saveStats();
+}
+
+function showAchievement(key) {
+    const ach = achievements[key];
+    const notification = document.getElementById('achievementNotification');
+    notification.innerHTML = `<div class="ach-icon">${ach.icon}</div><div class="ach-text"><div class="ach-name">${ach.name}</div><div class="ach-desc">${ach.desc}</div></div>`;
+    notification.classList.add('show');
+    setTimeout(() => notification.classList.remove('show'), 3000);
+    if (sounds.powerup) sounds.powerup();
+}
+
+function triggerNuke() {
+    spawnParticles(camera.position.clone(), 0xff0000, 100, 0.5);
+    triggerScreenShake(1, 1);
+    
+    for (let i = drones.length - 1; i >= 0; i--) {
+        const drone = drones[i];
+        score += drone.userData.points * combo;
+        kills++;
+        totalKills++;
+        spawnParticles(drone.position.clone(), drone.children[0].material.color.getHex(), 30, 0.3);
+        scene.remove(drone);
+        drones.splice(i, 1);
+    }
+    
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        scene.remove(projectiles[i]);
+        projectiles.splice(i, 1);
+    }
+    
+    updateScoreDisplay();
+    updateWaveDisplay();
+    if (sounds.explosion) sounds.explosion();
+}
+
 const sounds = {
     shoot: null,
     collect: null,
@@ -183,6 +302,7 @@ function initSounds() {
 }
 
 initSounds();
+loadStats();
 
 function detectTouchDevice() {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
@@ -220,8 +340,21 @@ function createOrb() {
 }
 
 function createPowerUp(type) {
-    const geometry = new THREE.OctahedronGeometry(0.5, 0);
-    const color = type === 'speed' ? 0x00ff00 : (type === 'freeze' ? 0x0088ff : 0xff8800);
+    const geometry = type === 'health' ? new THREE.IcosahedronGeometry(0.5, 0) : new THREE.OctahedronGeometry(0.5, 0);
+    let color;
+    switch(type) {
+        case 'speed': color = 0x00ff00; break;
+        case 'freeze': color = 0x0088ff; break;
+        case 'energy': color = 0xff8800; break;
+        case 'shield': color = 0x00ffff; break;
+        case 'nuke': color = 0xff0000; break;
+        case 'magnet': color = 0xff00ff; break;
+        case 'health': color = 0x00ff00; break;
+        case 'spread': color = 0xffaa00; break;
+        case 'pierce': color = 0x00aaff; break;
+        case 'rapid': color = 0xff5500; break;
+        default: color = 0xff8800;
+    }
     const material = new THREE.MeshStandardMaterial({
         color: color,
         emissive: color,
@@ -346,33 +479,55 @@ function createDrone(type = 'normal') {
 }
 
 function createProjectile() {
-    if (energy < 15) return;
+    const energyCost = currentWeapon === 'rapid' ? 8 : 15;
+    if (energy < energyCost) return;
     
-    energy -= 15;
+    energy -= energyCost;
     if (sounds.shoot) sounds.shoot();
+    
+    let color = 0x00ffff;
+    if (currentWeapon === 'spread') color = 0xffaa00;
+    if (currentWeapon === 'pierce') color = 0x00aaff;
+    if (currentWeapon === 'rapid') color = 0xff5500;
     
     const geometry = new THREE.SphereGeometry(0.2, 16, 16);
     const material = new THREE.MeshStandardMaterial({
-        color: 0x00ffff,
-        emissive: 0x00ffff,
+        color: color,
+        emissive: color,
         emissiveIntensity: 1,
         metalness: 1,
         roughness: 0
     });
-    const projectile = new THREE.Mesh(geometry, material);
     
-    const light = new THREE.PointLight(0x00ffff, 2, 8);
-    projectile.add(light);
+    const createSingleProjectile = (direction, pierceCount = 0) => {
+        const projectile = new THREE.Mesh(geometry.clone(), material.clone());
+        const light = new THREE.PointLight(color, 2, 8);
+        projectile.add(light);
+        projectile.position.copy(camera.position);
+        projectile.userData.velocity = direction.clone().normalize().multiplyScalar(80);
+        projectile.userData.life = 3;
+        projectile.userData.pierceCount = pierceCount;
+        scene.add(projectile);
+        projectiles.push(projectile);
+    };
     
-    const direction = new THREE.Vector3(0, 0, -1);
-    direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+    const baseDirection = new THREE.Vector3(0, 0, -1);
+    baseDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
     
-    projectile.position.copy(camera.position);
-    projectile.userData.velocity = direction.multiplyScalar(80);
-    projectile.userData.life = 3;
+    totalShots++;
     
-    scene.add(projectile);
-    projectiles.push(projectile);
+    if (currentWeapon === 'spread') {
+        const angles = [-0.15, 0, 0.15];
+        angles.forEach(angle => {
+            const dir = baseDirection.clone();
+            dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+            createSingleProjectile(dir);
+        });
+    } else if (currentWeapon === 'pierce') {
+        createSingleProjectile(baseDirection, 3);
+    } else {
+        createSingleProjectile(baseDirection);
+    }
     
     document.getElementById('crosshair').classList.add('shooting');
     setTimeout(() => {
@@ -439,6 +594,16 @@ function triggerScreenShake(intensity, duration = 0.3) {
 
 function takeDamage() {
     if (invincibleTimer > 0) return;
+    
+    if (shieldActive) {
+        shieldActive = false;
+        shieldTimer = 0;
+        spawnParticles(camera.position.clone(), 0x00ffff, 30, 0.2);
+        triggerScreenShake(0.3, 0.2);
+        updatePowerUpIndicator();
+        if (sounds.powerup) sounds.powerup();
+        return;
+    }
     
     health--;
     invincibleTimer = 1.5;
@@ -579,8 +744,6 @@ canvas.addEventListener('mousedown', (e) => {
     }
 });
 
-
-
 const joystickArea = document.getElementById('joystickArea');
 const joystickKnob = document.getElementById('joystickKnob');
 const shootArea = document.getElementById('shootArea');
@@ -708,6 +871,14 @@ function startGame() {
     dashCooldown = 0;
     speedBoostActive = false;
     freezeDronesActive = false;
+    shieldActive = false;
+    shieldTimer = 0;
+    magnetActive = false;
+    magnetTimer = 0;
+    currentWeapon = 'normal';
+    weaponTimer = 0;
+    totalShots = 0;
+    totalHits = 0;
     
     camera.position.set(0, 2, 0);
     playerVelocity.set(0, 0, 0);
@@ -715,6 +886,8 @@ function startGame() {
     yaw = 0;
     lastSurvivalBonus = 0;
     invincibleTimer = 0;
+    
+    gamesPlayed++;
     
     orbs.forEach(orb => scene.remove(orb));
     orbs.length = 0;
@@ -753,14 +926,31 @@ function gameOver() {
     gameState = GameState.GAME_OVER;
     document.exitPointerLock();
     
+    if (wave > highestWave) highestWave = wave;
+    saveStats();
+    
     if (score > highScore) {
         highScore = score;
         localStorage.setItem('spaceBallsHighScore', highScore);
     }
     
+    const accuracy = totalShots > 0 ? Math.round((totalHits / totalShots) * 100) : 0;
+    
     document.getElementById('finalScore').textContent = `SCORE: ${score}`;
     document.getElementById('highScore').textContent = `HIGH SCORE: ${highScore}`;
     document.getElementById('waveReached').textContent = `WAVE REACHED: ${wave}`;
+    document.getElementById('gameStats').innerHTML = `
+        <div class="stat-row"><span>KILLS:</span> ${kills}</div>
+        <div class="stat-row"><span>MAX COMBO:</span> x${highestCombo}</div>
+        <div class="stat-row"><span>ACCURACY:</span> ${accuracy}%</div>
+        <div class="stat-row"><span>TIME:</span> ${document.getElementById('timer').textContent}</div>
+    `;
+    
+    let unlockedAch = Object.values(achievements).filter(a => a.unlocked);
+    document.getElementById('achievementSummary').innerHTML = unlockedAch.length > 0 
+        ? `<div class="ach-list">${unlockedAch.map(a => `<div class="ach-badge" title="${a.name}: ${a.desc}">${a.icon}</div>`).join('')}</div>` 
+        : '<div class="no-achs">No achievements unlocked</div>';
+    
     document.getElementById('gameOverScreen').classList.remove('hidden');
     document.getElementById('crosshair').classList.add('hidden');
 }
@@ -800,13 +990,29 @@ function updateComboDisplay() {
 
 function updatePowerUpIndicator() {
     const indicator = document.getElementById('powerupIndicator');
+    let activePower = null;
+    let color = '#00ff00';
+    
     if (speedBoostActive) {
-        indicator.textContent = 'SPEED BOOST!';
-        indicator.style.color = '#00ff00';
-        indicator.classList.add('active');
+        activePower = 'SPEED BOOST!';
+        color = '#00ff00';
     } else if (freezeDronesActive) {
-        indicator.textContent = 'DRONES FROZEN!';
-        indicator.style.color = '#0088ff';
+        activePower = 'DRONES FROZEN!';
+        color = '#0088ff';
+    } else if (shieldActive) {
+        activePower = 'SHIELD ACTIVE!';
+        color = '#00ffff';
+    } else if (magnetActive) {
+        activePower = 'MAGNET ACTIVE!';
+        color = '#ff00ff';
+    } else if (currentWeapon !== 'normal') {
+        activePower = `${currentWeapon.toUpperCase()} WEAPON!`;
+        color = currentWeapon === 'spread' ? '#ffaa00' : (currentWeapon === 'pierce' ? '#00aaff' : '#ff5500');
+    }
+    
+    if (activePower) {
+        indicator.textContent = activePower;
+        indicator.style.color = color;
         indicator.classList.add('active');
     } else {
         indicator.classList.remove('active');
@@ -877,6 +1083,12 @@ function update() {
         document.getElementById('invincibleOverlay').style.opacity = '0';
     }
     
+    if (shieldActive) {
+        document.getElementById('shieldOverlay').style.opacity = '1';
+    } else {
+        document.getElementById('shieldOverlay').style.opacity = '0';
+    }
+    
     if (speedBoostActive) {
         speedBoostTimer -= delta;
         if (speedBoostTimer <= 0) {
@@ -889,6 +1101,30 @@ function update() {
         freezeDronesTimer -= delta;
         if (freezeDronesTimer <= 0) {
             freezeDronesActive = false;
+            updatePowerUpIndicator();
+        }
+    }
+    
+    if (shieldActive) {
+        shieldTimer -= delta;
+        if (shieldTimer <= 0) {
+            shieldActive = false;
+            updatePowerUpIndicator();
+        }
+    }
+    
+    if (magnetActive) {
+        magnetTimer -= delta;
+        if (magnetTimer <= 0) {
+            magnetActive = false;
+            updatePowerUpIndicator();
+        }
+    }
+    
+    if (weaponTimer > 0) {
+        weaponTimer -= delta;
+        if (weaponTimer <= 0) {
+            currentWeapon = 'normal';
             updatePowerUpIndicator();
         }
     }
@@ -945,7 +1181,13 @@ function update() {
             orb.rotation.y += orb.userData.rotationSpeed;
         }
         
-        const dist = camera.position.distanceTo(orb.position);
+        let dist = camera.position.distanceTo(orb.position);
+        if (magnetActive && orb.userData.type !== 'shield' && orb.userData.type !== 'nuke') {
+            const toPlayer = camera.position.clone().sub(orb.position);
+            orb.position.add(toPlayer.normalize().multiplyScalar(delta * 20));
+            dist = camera.position.distanceTo(orb.position);
+        }
+        
         if (dist < 1.5) {
             let points = 10;
             
@@ -965,9 +1207,37 @@ function update() {
                 energy = Math.min(100, energy + 30);
                 spawnParticles(orb.position.clone(), 0xff8800, 15, 0.2);
                 if (sounds.collect) sounds.collect();
+            } else if (orb.userData.type === 'shield') {
+                shieldActive = true;
+                shieldTimer = 10;
+                updatePowerUpIndicator();
+                spawnParticles(orb.position.clone(), 0x00ffff, 20, 0.2);
+                if (sounds.powerup) sounds.powerup();
+            } else if (orb.userData.type === 'nuke') {
+                triggerNuke();
+            } else if (orb.userData.type === 'magnet') {
+                magnetActive = true;
+                magnetTimer = 8;
+                updatePowerUpIndicator();
+                spawnParticles(orb.position.clone(), 0xff00ff, 20, 0.2);
+                if (sounds.powerup) sounds.powerup();
+            } else if (orb.userData.type === 'health') {
+                health = Math.min(3, health + 1);
+                updateHealthDisplay();
+                spawnParticles(orb.position.clone(), 0x00ff00, 20, 0.2);
+                if (sounds.powerup) sounds.powerup();
+            } else if (orb.userData.type === 'spread' || orb.userData.type === 'pierce' || orb.userData.type === 'rapid') {
+                currentWeapon = orb.userData.type;
+                weaponTimer = 10;
+                updatePowerUpIndicator();
+                let weaponColor = orb.userData.type === 'spread' ? 0xffaa00 : (orb.userData.type === 'pierce' ? 0x00aaff : 0xff5500);
+                spawnParticles(orb.position.clone(), weaponColor, 20, 0.2);
+                if (sounds.powerup) sounds.powerup();
             } else {
                 comboTimer = 2;
                 combo = Math.min(combo + 1, 10);
+                highestCombo = Math.max(highestCombo, combo);
+                if (combo >= 5) checkAchievements();
                 updateComboDisplay();
                 
                 points *= combo;
@@ -975,17 +1245,26 @@ function update() {
                 
                 if (Math.random() < 0.2) {
                     const rand = Math.random();
-                    if (rand < 0.4) {
-                        createPowerUp(Math.random() < 0.5 ? 'speed' : 'freeze');
-                    } else if (rand < 0.7) {
-                        createPowerUp('energy');
+                    const types = ['speed', 'freeze', 'energy', 'shield', 'magnet', 'health', 'spread', 'pierce', 'rapid', 'nuke'];
+                    const weights = [0.15, 0.15, 0.2, 0.1, 0.1, 0.1, 0.05, 0.05, 0.05, 0.05];
+                    let r = Math.random();
+                    let cumulative = 0;
+                    let selected = types[0];
+                    for (let i = 0; i < types.length; i++) {
+                        cumulative += weights[i];
+                        if (r < cumulative) {
+                            selected = types[i];
+                            break;
+                        }
                     }
+                    createPowerUp(selected);
                 }
                 
                 if (orbs.length < 8) createOrb();
             }
             
             score += points;
+            if (score >= 10000) checkAchievements();
             if (sounds.collect) sounds.collect();
             updateScoreDisplay();
             
@@ -999,29 +1278,42 @@ function update() {
         proj.position.add(proj.userData.velocity.clone().multiplyScalar(delta));
         proj.userData.life -= delta;
         
+        let hitDrone = false;
         for (let j = drones.length - 1; j >= 0; j--) {
             const drone = drones[j];
             const hitRadius = drone.userData.type === 'boss' ? 3 : 1.5;
             if (proj.position.distanceTo(drone.position) < hitRadius) {
                 drone.userData.health--;
                 drone.userData.hitFlashTimer = 0.15;
+                totalHits++;
                 
                 if (drone.children[0] && drone.children[0].material) {
                     drone.children[0].material.emissiveIntensity = 2;
                 }
                 
-                spawnParticles(proj.position.clone(), 0x00ffff, 10);
-                
-                scene.remove(proj);
-                projectiles.splice(i, 1);
+                let projColor = 0x00ffff;
+                if (currentWeapon === 'spread') projColor = 0xffaa00;
+                if (currentWeapon === 'pierce') projColor = 0x00aaff;
+                if (currentWeapon === 'rapid') projColor = 0xff5500;
+                spawnParticles(proj.position.clone(), projColor, 10);
                 
                 if (drone.userData.health <= 0) {
                     score += drone.userData.points * combo;
                     kills++;
+                    totalKills++;
+                    if (kills === 1) checkAchievements();
+                    if (totalKills >= 100) checkAchievements();
+                    
+                    if (score >= 10000) checkAchievements();
                     updateScoreDisplay();
                     updateWaveDisplay();
                     
                     if (sounds.explosion) sounds.explosion();
+                    
+                    if (drone.userData.type === 'boss' && !achievements.bossKiller.unlocked) {
+                        achievements.bossKiller.unlocked = true;
+                        showAchievement('bossKiller');
+                    }
                     
                     const particleCount = drone.userData.type === 'boss' ? 50 : 25;
                     const particleSize = drone.userData.type === 'boss' ? 0.4 : 0.2;
@@ -1036,8 +1328,21 @@ function update() {
                     scene.remove(drone);
                     drones.splice(j, 1);
                 }
-                break;
+                
+                if (proj.userData.pierceCount !== undefined && proj.userData.pierceCount > 0) {
+                    proj.userData.pierceCount--;
+                    hitDrone = false;
+                } else {
+                    hitDrone = true;
+                    break;
+                }
             }
+        }
+        
+        if (hitDrone) {
+            scene.remove(proj);
+            projectiles.splice(i, 1);
+            continue;
         }
         
         if (proj.userData.life <= 0 || 
@@ -1114,6 +1419,8 @@ function update() {
     if (drones.length === 0 && !waveSpawned) {
         waveSpawned = true;
         wave++;
+        if (wave >= 5) checkAchievements();
+        if (wave >= 10) checkAchievements();
         setTimeout(() => {
             spawnWave();
             waveSpawned = false;
